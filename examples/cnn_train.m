@@ -18,6 +18,8 @@ function [net, stats] = cnn_train(net, imdb, getBatch, varargin)
 % the terms of the BSD license (see the COPYING file).
 addpath(fullfile(vl_rootnn, 'examples'));
 
+global feature_store
+
 opts.expDir = fullfile('data','exp') ;
 opts.continue = true ;
 opts.batchSize = 256 ;
@@ -30,6 +32,7 @@ opts.prefetch = false ;
 opts.numEpochs = 300 ;
 opts.learningRate = 0.001 ;
 opts.weightDecay = 0.0005 ;
+opts.mnistVer = 1;
 
 opts.solver = [] ;  % Empty array means use the default SGD solver
 [opts, varargin] = vl_argparse(opts, varargin) ;
@@ -126,6 +129,9 @@ if start >= 1
 else
   state = [] ;
 end
+for lx=1:numel(net.layers)
+net.layers{lx}.precious = true;
+end
 
 for epoch=start+1:opts.numEpochs
 
@@ -142,21 +148,23 @@ for epoch=start+1:opts.numEpochs
   params.learningRate = opts.learningRate(min(epoch, numel(opts.learningRate))) ;
   params.train = opts.train(randperm(numel(opts.train))) ; % shuffle
   params.train = params.train(1:min(opts.epochSize, numel(opts.train)));
-  params.val = opts.val(randperm(numel(opts.val))) ;
+  %params.val = opts.val(randperm(numel(opts.val))) ;
+  params.val = opts.val;
   params.imdb = imdb ;
   params.getBatch = getBatch ;
 
   if numel(params.gpus) <= 1
-    [net, state] = processEpoch(net, state, params, 'train') ;
-    [net, state] = processEpoch(net, state, params, 'val') ;
+    [net, state, feats] = processEpoch(net, state, params, 'train') ;
+    [net, state, feats] = processEpoch(net, state, params, 'val') ;
     if ~evaluateMode
       saveState(modelPath(epoch), net, state) ;
     end
     lastStats = state.stats ;
   else
     spmd
-      [net, state] = processEpoch(net, state, params, 'train') ;
-      [net, state] = processEpoch(net, state, params, 'val') ;
+      [net, state, feats] = processEpoch(net, state, params, 'train') ;
+      [net, state, feats] = processEpoch(net, state, params, 'val') ;
+      
       if labindex == 1 && ~evaluateMode
         saveState(modelPath(epoch), net, state) ;
       end
@@ -165,8 +173,10 @@ for epoch=start+1:opts.numEpochs
     lastStats = accumulateStats(lastStats) ;
   end
 
+  stats.out_features = feats;
   stats.train(epoch) = lastStats.train ;
   stats.val(epoch) = lastStats.val ;
+  save(fullfile(opts.expDir,['features_' num2str(opts.mnistVer) '.mat']),'feats')
   clear lastStats ;
   if ~evaluateMode
     saveStats(modelPath(epoch), stats) ;
@@ -253,12 +263,12 @@ function err = error_none(params, labels, res)
 err = zeros(0,1) ;
 
 % -------------------------------------------------------------------------
-function [net, state] = processEpoch(net, state, params, mode)
+function [net, state, feats] = processEpoch(net, state, params, mode)
 % -------------------------------------------------------------------------
 % Note that net is not strictly needed as an output argument as net
 % is a handle class. However, this fixes some aliasing issue in the
 % spmd caller.
-
+feats = [];
 % initialize with momentum 0
 if isempty(state) || isempty(state.solverState)
   for i = 1:numel(net.layers)
@@ -375,6 +385,7 @@ for t=1:params.batchSize:numel(subset)
   stats = extractStats(net, params, error / num) ;
   stats.num = num ;
   stats.time = time ;
+  feats = cat(4,feats,res(end-1).x);
   currentSpeed = batchSize / batchTime ;
   averageSpeed = (t + batchSize - 1) / time ;
   if t == 3*params.batchSize + 1
