@@ -335,6 +335,9 @@ for i=1:n
       if l.leak > 0, leak = {'leak', l.leak} ; else leak = {} ; end
       res(i+1).x = vl_nnrelu(res(i).x,[],leak{:}) ;
 
+    case 'slicingrelu'
+      res(i+1).x = vl_nnslicingrelu(res(i).x,[]) ;
+
     case 'sigmoid'
       res(i+1).x = vl_nnsigmoid(res(i).x) ;
 
@@ -454,7 +457,8 @@ if doder
           % hack (which works only for ReLU):
           res(i).dzdx = vl_nnrelu(res(i+1).x, res(i+1).dzdx, leak{:}) ;
         end
-
+       case 'slicingrelu'
+          res(i).dzdx = vl_nnslicingrelu(res(i+1).x, res(i+1).dzdx) ;
       case 'sigmoid'
         res(i).dzdx = vl_nnsigmoid(res(i).x, res(i+1).dzdx) ;
 
