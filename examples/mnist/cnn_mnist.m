@@ -4,7 +4,7 @@ function [net, info] = cnn_mnist(varargin)
 run(fullfile(fileparts(mfilename('fullpath')),...
   '..', '..', 'matlab', 'vl_setupnn.m')) ;
 
-opts.mnistVer = 5;
+opts.mnistVer = 0;
 opts.imdbEval = 0;
 opts.dataJitter = 1;
 opts.batchNormalization = false ;
@@ -74,7 +74,7 @@ if exist(opts.imdbPath, 'file')
 else
   imdb = getMnistImdb(opts) ;
   mkdir(opts.expDir) ;
-  fprintf(["creating file " opts.expDir])  
+  fprintf(['creating file ' opts.expDir])
   save(opts.imdbPath, '-struct', 'imdb') ;
 end
 end

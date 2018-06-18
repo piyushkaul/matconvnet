@@ -1,9 +1,9 @@
 %% Experiment with the cnn_mnist_fc_bnorm
 
-for final_fc = 0:1
+for final_fc = 1
 for layers_num = 0:20
 [net_bn, info_bn] = cnn_mnist(...
-  'expDir', 'data/mnist-bnorm', 'batchNormalization', false, 'layers_num', layers_num, 'final_fc', final_fc);
+   'batchNormalization', false, 'layers_num', layers_num, 'final_fc', final_fc);
 end
 end 
 

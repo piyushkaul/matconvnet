@@ -41,7 +41,7 @@ else
 end 
 
 net.layers{end+1} = struct('type', 'conv', ...
-                           'weights', {{f*randn(6,6,50,final_feat, 'single'),  zeros(1,500,'single')}}, ...
+                           'weights', {{f*randn(6,6,50,final_feat, 'single'),  zeros(1,final_feat,'single')}}, ...
                            'stride', 1, ...
                            'pad', 0) ;
 
@@ -65,7 +65,7 @@ end
 % Meta parameters
 net.meta.inputSize = [28 28 1] ;
 net.meta.trainOpts.learningRate = 0.001 ;
-net.meta.trainOpts.numEpochs = 20 ;
+net.meta.trainOpts.numEpochs = 50 ;
 net.meta.trainOpts.batchSize = 100 ;
 
 % Fill in defaul values
