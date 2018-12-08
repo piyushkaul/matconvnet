@@ -61,7 +61,7 @@ if sz_(3) == 2
 end
 
 % convert to indexes
-c = c - 1 ;
+c = c - 1; 
 c_ = 0:numel(c)-1 ;
 c_ = 1 + ...
   mod(c_, sz(1)*sz(2)) + ...
@@ -69,7 +69,7 @@ c_ = 1 + ...
   (sz(1)*sz(2)*sz(3)) * floor(c_/(sz(1)*sz(2))) ;
 
 % compute softmaxloss
-xmax = max(x,[],3) ;
+[xmax,idx] = max(x,[],3) ;
 ex = exp(bsxfun(@minus, x, xmax)) ;
 
 %n = sz(1)*sz(2) ;

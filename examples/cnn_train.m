@@ -33,6 +33,7 @@ opts.numEpochs = 300 ;
 opts.learningRate = 0.001 ;
 opts.weightDecay = 0.0005 ;
 opts.mnistVer = 1;
+opts.imdbEval = 0;
 
 opts.solver = [] ;  % Empty array means use the default SGD solver
 [opts, varargin] = vl_argparse(opts, varargin) ;
@@ -129,9 +130,21 @@ if start >= 1
 else
   state = [] ;
 end
+
 for lx=1:numel(net.layers)
 net.layers{lx}.precious = true;
 end
+
+for lx=1:numel(net.layers) 
+    if strcmp(net.layers{lx}.type,'softmaxloss') && opts.imdbEval == 1
+        net.layers{lx}.type = 'softmax' ;
+    end 
+end 
+if opts.imdbEval == 1
+    net.meta.trainOpts.batchSize = 1;
+    net.meta.trainOpts.numEpochs = net.meta.trainOpts.numEpochs + 1;
+    opts.numEpochs = opts.numEpochs + 1;
+end 
 
 for epoch=start+1:opts.numEpochs
 
@@ -154,16 +167,16 @@ for epoch=start+1:opts.numEpochs
   params.getBatch = getBatch ;
 
   if numel(params.gpus) <= 1
-    [net, state, feats] = processEpoch(net, state, params, 'train') ;
-    [net, state, feats] = processEpoch(net, state, params, 'val') ;
+    [net, state, feats] = processEpoch(net, state, params, 'train', opts) ;
+    [net, state, feats] = processEpoch(net, state, params, 'val', opts) ;
     if ~evaluateMode
       saveState(modelPath(epoch), net, state) ;
     end
     lastStats = state.stats ;
   else
     spmd
-      [net, state, feats] = processEpoch(net, state, params, 'train') ;
-      [net, state, feats] = processEpoch(net, state, params, 'val') ;
+      [net, state, feats] = processEpoch(net, state, params, 'train', opts) ;
+      [net, state, feats] = processEpoch(net, state, params, 'val', opts) ;
       
       if labindex == 1 && ~evaluateMode
         saveState(modelPath(epoch), net, state) ;
@@ -172,7 +185,11 @@ for epoch=start+1:opts.numEpochs
     end
     lastStats = accumulateStats(lastStats) ;
   end
-
+  if ~isfield(lastStats.train,'top1err')
+      lastStats.train.top1err = 0;
+      lastStats.train.top5err = 0;
+      lastStats.train.objective = 0;
+  end 
   stats.out_features = feats;
   stats.train(epoch) = lastStats.train ;
   stats.val(epoch) = lastStats.val ;
@@ -263,7 +280,7 @@ function err = error_none(params, labels, res)
 err = zeros(0,1) ;
 
 % -------------------------------------------------------------------------
-function [net, state, feats] = processEpoch(net, state, params, mode)
+function [net, state, feats] = processEpoch(net, state, params, mode, opts)
 % -------------------------------------------------------------------------
 % Note that net is not strictly needed as an output argument as net
 % is a handle class. However, this fixes some aliasing issue in the
@@ -368,9 +385,24 @@ for t=1:params.batchSize:numel(subset)
                       'holdOn', s < params.numSubBatches) ;
 
     % accumulate errors
-    error = sum([error, [...
-      sum(size(res(end-1).x,4) * double(gather(res(end).x))) ;
-      reshape(params.errorFunction(params, labels, res),[],1) ; ]],2) ;
+    if opts.imdbEval
+        dx = double(gather(res(end).x(2)));
+    else
+        dx = double(gather(res(end).x));
+    end 
+    ex = size(res(end-1).x,4);
+    %ex_sz = size(ex);
+    %dx_sz = size(dx) ;   
+    bx = sum(ex * dx);
+    cx = reshape(params.errorFunction(params, labels, res),[],1);
+    %bx_sz = size(bx);
+    %cx_sz = size(cx);
+    ax = [...
+       bx ;
+       cx; ];
+   %ax_sz = size(ax);
+   %er_sz = size(error);
+    error = sum([error, ax],2) ;
   end
 
   % accumulate gradient
@@ -385,7 +417,9 @@ for t=1:params.batchSize:numel(subset)
   stats = extractStats(net, params, error / num) ;
   stats.num = num ;
   stats.time = time ;
-  feats = cat(4,feats,res(end-1).x);
+  if opts.imdbEval
+    feats = cat(4,feats,res(end).x);
+  end 
   currentSpeed = batchSize / batchTime ;
   averageSpeed = (t + batchSize - 1) / time ;
   if t == 3*params.batchSize + 1

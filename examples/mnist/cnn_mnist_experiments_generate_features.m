@@ -1,7 +1,7 @@
 src_imdb = '..\..\data\mnist-baseline-5simplenn1\imdb_eval.mat';
 sfx = 'simplenn';
-for final_fc = 0:1
-for layers_num = 0:20
+for final_fc = 1%0:1
+for layers_num = 5%0:20
 src_file = ['..\..\data\final_epochs\mnist-baseline-' num2str(0) sfx '_jitter_' num2str(1) '_layers_num_' num2str(layers_num) '_final_fc_' num2str(final_fc) '_net-epoch-20.mat'];
 destination_directory = ['..\..\data\mnist-baseline-' num2str(0) sfx '_jitter_' num2str(1) '_layers_num_' num2str(layers_num) '_final_fc_' num2str(final_fc) '\'];
 system(['mkdir -p ' destination_directory])

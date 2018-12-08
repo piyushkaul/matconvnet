@@ -4,6 +4,7 @@ opts.batchNormalization = true ;
 opts.networkType = 'simplenn' ;
 opts.layers_num = 0;
 opts.final_fc = 1;
+opts.imdbEval = 0;
 opts = vl_argparse(opts, varargin) ;
 
 rng('default');
@@ -53,7 +54,12 @@ net.layers{end+1} = struct('type', 'conv', ...
                            'stride', 1, ...
                            'pad', 0) ;
 end
-net.layers{end+1} = struct('type', 'softmaxloss') ;
+
+if opts.imdbEval == 0
+    net.layers{end+1} = struct('type', 'softmaxloss') ;
+else
+    net.layers{end+1} = struct('type', 'softmax') ;
+end 
 
 % optionally switch to batch normalization
 if opts.batchNormalization
@@ -65,7 +71,7 @@ end
 % Meta parameters
 net.meta.inputSize = [28 28 1] ;
 net.meta.trainOpts.learningRate = 0.001 ;
-net.meta.trainOpts.numEpochs = 50 ;
+net.meta.trainOpts.numEpochs = 20 ;
 net.meta.trainOpts.batchSize = 100 ;
 
 % Fill in defaul values
