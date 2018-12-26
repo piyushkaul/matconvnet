@@ -137,13 +137,14 @@ end
 
 for lx=1:numel(net.layers) 
     if strcmp(net.layers{lx}.type,'softmaxloss') && opts.imdbEval == 1
-        net.layers{lx}.type = 'softmax' ;
+        net.layers{lx}.type = 'softmax' ; %Piyush
     end 
 end 
 if opts.imdbEval == 1
-    net.meta.trainOpts.batchSize = 1;
+    net.meta.trainOpts.batchSize = 1; %Piyush
     net.meta.trainOpts.numEpochs = net.meta.trainOpts.numEpochs + 1;
     opts.numEpochs = opts.numEpochs + 1;
+    opts.batchSize = 1;
 end 
 
 for epoch=start+1:opts.numEpochs
@@ -185,13 +186,16 @@ for epoch=start+1:opts.numEpochs
     end
     lastStats = accumulateStats(lastStats) ;
   end
-  if ~isfield(lastStats.train,'top1err')
-      lastStats.train.top1err = 0;
-      lastStats.train.top5err = 0;
-      lastStats.train.objective = 0;
-  end 
+%   if ~isfield(stats.val(end),'top1err')
+%   for ix=1:length(stats.val)
+%     stats.val(ix).top1err = 0;
+%     stats.val(ix).top5err = 0;
+%     stats.val(ix).objective = 0;
+%   end
+%   end
+  
   stats.out_features = feats;
-  stats.train(epoch) = lastStats.train ;
+  stats.train(epoch) = lastStats.train ;      
   stats.val(epoch) = lastStats.val ;
   save(fullfile(opts.expDir,['features_' num2str(opts.mnistVer) '.mat']),'feats')
   clear lastStats ;
@@ -385,7 +389,7 @@ for t=1:params.batchSize:numel(subset)
                       'holdOn', s < params.numSubBatches) ;
 
     % accumulate errors
-    if opts.imdbEval
+    if opts.imdbEval %Piyush
         dx = double(gather(res(end).x(2)));
     else
         dx = double(gather(res(end).x));

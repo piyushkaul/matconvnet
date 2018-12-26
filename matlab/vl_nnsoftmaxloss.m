@@ -69,7 +69,7 @@ c_ = 1 + ...
   (sz(1)*sz(2)*sz(3)) * floor(c_/(sz(1)*sz(2))) ;
 
 % compute softmaxloss
-[xmax,idx] = max(x,[],3) ;
+[xmax,idx] = max(x,[],3);
 ex = exp(bsxfun(@minus, x, xmax)) ;
 
 %n = sz(1)*sz(2) ;

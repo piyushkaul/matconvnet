@@ -19,6 +19,8 @@ function Y = vl_nnsoftmax(X,dzdY)
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
 
+[val,idx] = max(X,[],3);
+
 E = exp(bsxfun(@minus, X, max(X,[],3))) ;
 L = sum(E,3) ;
 Y = bsxfun(@rdivide, E, L) ;
