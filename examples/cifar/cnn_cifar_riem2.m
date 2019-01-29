@@ -14,7 +14,7 @@ opts.expDir = fullfile(vl_rootnn, 'data', ...
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 opts.dataDir = fullfile(vl_rootnn, 'data','cifar') ;
-opts.evalMode = 0;
+opts.evalMode = 1;
 if opts.evalMode == 1
     opts.imdbPath = fullfile(opts.expDir,'imdbEval.mat');
 else
@@ -41,6 +41,10 @@ switch opts.modelType
     net = cnn_cifar_init('networkType', opts.networkType) ;
   case 'lenet_nl'
     net = cnn_cifar_init_nl('networkType', opts.networkType) ;
+  case 'lenet_nl_temp'
+    net = cnn_cifar_init_nl('networkType', opts.networkType) ;    
+  case 'lenet_nl_bn'
+    net = cnn_cifar_init_nl_bn('networkType', opts.networkType) ;
   case 'nin'
     net = cnn_cifar_init_nin('networkType', opts.networkType) ;
   otherwise
@@ -52,9 +56,9 @@ if exist(opts.imdbPath, 'file')
   imdb.images.data = single(imdb.images.data);
 else
     if ~opts.evalMode
-        imdb = getCifarImdbJitter(opts) ;
+        imdb = getCifarImdb(opts) ;
     else
-        imdb = getCifarImdbEval2(opts);
+        imdb = getCifarImdbEval(opts);
     end 
   mkdir(opts.expDir) ;
   save(opts.imdbPath, '-struct', 'imdb') ;
@@ -237,7 +241,7 @@ for dataIdx=1:size(data,4)
     for numJitter=1:4
         tx = randn * 15;
         ty = randn * 15;
-        dataOut(:,:,:,outIdx) = imtranslate(data(:,:,:,dataIdx),[tx, ty],'FillValues',0);
+        dataOut(:,:,:,outIdx) = imtranslate(data(:,:,:,dataIdx),[tx, ty],'FillValues',255);
         outIdx = outIdx + 1;
     end 
 end 
@@ -324,7 +328,7 @@ data = single(cat(4, data{:}));
 % remove mean in any case
 dataMean = mean(data(:,:,:,set == 1), 4);
 
-v = VideoReader('C:\Users\piyushk\Desktop\morph\cat_dog\cat_dog_backforth_smooth.avi');
+v = VideoReader('C:\Users\piyushk\Desktop\morph\cat_dog\cat_dog_backforth_smooth_300.avi');
 currAxes = axes;
 v.CurrentTime = 0;
 itx = 1;
@@ -338,16 +342,16 @@ data_vid = [];
 total = 1;
 while hasFrame(v)
     vidFrame = readFrame(v);
-    image(vidFrame, 'Parent', currAxes);
-    currAxes.Visible = 'off';
-    pause(1/v.FrameRate);        
+    %image(vidFrame, 'Parent', currAxes);
+    %currAxes.Visible = 'off';
+    %pause(1/v.FrameRate);        
     outimg = imresize(vidFrame,[32, 32]);
     for tx=tx_range
-        outimg = imtranslate(outimg,[tx, ty],'FillValues',0);
-        data_vid(:,:,:,total ) = outimg;
+        outimg2 = imtranslate(outimg,[tx, ty],'FillValues',255);
+        data_vid(:,:,:,total ) = outimg2;
         tx_used(total ) = tx;
         theta_used(total ) = itx;        
-        fprintf('.')
+        %fprintf('.')
         total = total + 1;
     end 
     itx = itx + 1;      
@@ -447,24 +451,24 @@ for ix=idx_cat
 end 
 end
 itx = 1;
-max_tx = 15;
-min_tx = -15;
-steps_per_tx = 0.1;%Piyush
-theta_steps = 1/300; %Piyush
+max_tx = 10;
+min_tx = -10;
+steps_per_tx = 20/300;%Piyush
+alpha_steps = 1/300; %Piyush
 tx_range = min_tx:steps_per_tx:max_tx;
-tx_used = zeros(1,numel(tx_range));
+alpha_range=0:alpha_steps:1;
 ty = 0;
 data_vid = [];
 total = 1;
 
-for alpha = 0:theta_steps:1
+for alpha = alpha_range
     dogcat1 = cat1*alpha + (1-alpha)*dog1;%Piyush
     outimg = imresize(dogcat1,[32, 32]);
     for tx=tx_range
         outimg_shifted = imtranslate(outimg,[tx, ty],'FillValues',255);
         data_vid(:,:,:,total ) = outimg_shifted;
         tx_used(total ) = tx;
-        theta_used(total ) =  alpha;        
+        alpha_used(total ) =  alpha;        
         %fprintf('.')
         %imshow(outimg_shifted)
         total = total + 1;
@@ -516,7 +520,7 @@ imdb.images.set = set;
 imdb.meta.sets = {'train', 'val', 'test'} ;
 imdb.meta.classes = clNames.label_names;
 imdb.images.tx_used = tx_used;
-imdb.images.theta_used = theta_used;
+imdb.images.alpha_used = alpha_used;
 
 
 % -------------------------------------------------------------------------
@@ -594,24 +598,24 @@ for theta=theta_range
     tform = affine2d([cosd(theta) sind(theta) 0;...
         -sind(theta) cosd(theta) 0; 1 1 1]);    
     
-    dog1 = imresize(dog1,[32, 32]);
-    cat1 = imresize(cat1, [32,32]);
+    dog_temp = imresize(dog1,[32, 32]);
+    cat_temp = imresize(cat1, [32,32]);
 
-    [dog1] = imwarp(dog1,tform);      
-    [cat1] = imwarp(cat1,tform);  
+    [dog_temp2] = imwarp(dog_temp,tform, 'FillValues', 255);      
+    [cat_temp2] = imwarp(cat_temp,tform, 'FillValues', 255);  
     
-    dog1 = dog1(1:32,1:32,:);
-    cat1 = cat1(1:32,1:32,:);
+    dog_temp3 = dog_temp2(1:32,1:32,:);
+    cat_temp3 = cat_temp2(1:32,1:32,:);
     
     for alpha = alpha_range
-        dogcat1 = cat1*alpha + (1-alpha)*dog1;%Piyush                        
+        dogcat1 = cat_temp3*alpha + (1-alpha)*dog_temp3;%Piyush                        
         
         data_vid(:,:,:,total ) = dogcat1;
         
         theta_used(total ) = theta;
         alpha_used(total ) =  alpha;        
         %fprintf('.')
-        imshow(dogcat1)
+        %imshow(dogcat1)
         total = total + 1;
     end 
     itx = itx + 1;      
@@ -624,7 +628,7 @@ data = bsxfun(@minus, single(data_vid), dataMean);
 % Single-Layer Networks in Unsupervised Feature Learning` Adam
 % Coates, Honglak Lee, Andrew Y. Ng
 num_images = size(data,4);
-set = 2*ones(1,num_images);
+set = 3*ones(1,num_images);
 set(end) = 1;
 labels = ones(1,num_images);
 

@@ -29,7 +29,7 @@ opts.val = [] ;
 opts.gpus = [] ;
 opts.epochSize = inf;
 opts.prefetch = false ;
-opts.numEpochs = 300 ;
+opts.numEpochs = 200 ;
 opts.learningRate = 0.001 ;
 opts.weightDecay = 0.0005 ;
 opts.mnistVer = 1;
@@ -140,13 +140,15 @@ for lx=1:numel(net.layers)
         net.layers{lx}.type = 'softmax' ; %Piyush
     end 
 end 
+net.meta.trainOpts.numEpochs = 200;
+opts.numEpochs = 200;
 if opts.imdbEval == 1
     net.meta.trainOpts.batchSize = 1; %Piyush
     net.meta.trainOpts.numEpochs = net.meta.trainOpts.numEpochs + 1;
     opts.numEpochs = opts.numEpochs + 1;
     opts.batchSize = 1;
 end 
-
+net.meta.trainOpts.learningRate = [0.05*ones(1,200)] ;
 for epoch=start+1:opts.numEpochs
 
   % Set the random seed based on the epoch and opts.randomSeed.
