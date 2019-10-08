@@ -60,7 +60,7 @@ opts.cudnn = true ;
 opts.errorFunction = 'multiclass' ;
 opts.errorLabels = {} ;
 opts.plotDiagnostics = false ;
-opts.plotStatistics = true;
+opts.plotStatistics = false;
 opts.postEpochFn = [] ;  % postEpochFn(net,params,state) called after each epoch; can return a new learning rate, 0 to stop, [] for no change
 opts = vl_argparse(opts, varargin) ;
 
@@ -140,8 +140,8 @@ for lx=1:numel(net.layers)
         net.layers{lx}.type = 'softmax' ; %Piyush
     end 
 end 
-net.meta.trainOpts.numEpochs = 200;
-opts.numEpochs = 200;
+net.meta.trainOpts.numEpochs = 15;
+opts.numEpochs = 15;
 if opts.imdbEval == 1
     net.meta.trainOpts.batchSize = 1; %Piyush
     net.meta.trainOpts.numEpochs = net.meta.trainOpts.numEpochs + 1;

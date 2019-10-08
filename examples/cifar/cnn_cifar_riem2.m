@@ -21,8 +21,8 @@ else
     opts.imdbPath = fullfile(opts.expDir, 'imdb.mat');
 end 
 opts.special = 1;
-opts.first_label = 4;
-opts.second_label = 6;
+opts.first_label = 6;
+opts.second_label = 9;
 
 opts.whitenData = false ;
 opts.contrastNormalization = false ;
@@ -58,7 +58,7 @@ else
     if ~opts.evalMode
         imdb = getCifarImdb(opts) ;
     else
-        imdb = getCifarImdbEval(opts);
+        imdb = getCifarImdbEval2(opts);
     end 
   mkdir(opts.expDir) ;
   save(opts.imdbPath, '-struct', 'imdb') ;

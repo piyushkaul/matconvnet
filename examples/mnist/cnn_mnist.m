@@ -15,6 +15,7 @@ opts.layers_num = 1;
 opts.final_fc = 1;
 opts.first_digit = 6;
 opts.second_digit = 2;
+opts.non_linearity = 'max';
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 sfx = opts.networkType ;
@@ -38,7 +39,7 @@ if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end
 if isempty(opts.network)
     if opts.mnistVer == 0
         net = cnn_mnist_init_generic('batchNormalization', opts.batchNormalization, ...
-    'networkType', opts.networkType, 'layers_num', opts.layers_num, 'final_fc', opts.final_fc, 'imdbEval', opts.imdbEval) ;
+    'networkType', opts.networkType, 'layers_num', opts.layers_num, 'final_fc', opts.final_fc, 'imdbEval', opts.imdbEval, 'non_linearity', opts.non_linearity) ;
     elseif  opts.mnistVer == 1
         net = cnn_mnist_init('batchNormalization', opts.batchNormalization, ...
     'networkType', opts.networkType) ;
