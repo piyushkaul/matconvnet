@@ -1,9 +1,9 @@
 %% Experiment with the cnn_mnist_fc_bnorm
 
 for final_fc = 1
-for layers_num = 20
+for layers_num = 8
 [net_bn, info_bn] = cnn_mfold(...
-   'batchNormalization', true, 'layers_num', layers_num, 'final_fc', final_fc, 'non_linearity', 'relu', 'pool', 'avg', 'imdbEval', 0);
+   'batchNormalization', true, 'layers_num', layers_num, 'final_fc', final_fc, 'non_linearity', 'relu1', 'pool', 'avg', 'imdbEval', 0);
 end
 end 
 

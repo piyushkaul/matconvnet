@@ -59,7 +59,7 @@ end
 
 % Meta parameters
 net.meta.inputSize = [28 28 1] ;
-net.meta.trainOpts.learningRate = 0.001 ;
+net.meta.trainOpts.learningRate = 0.01 ;
 net.meta.trainOpts.numEpochs = 100 ;
 net.meta.trainOpts.batchSize = 100 ;
 

@@ -142,7 +142,7 @@ x_t = theta.*(cos(theta+delta_theta) ) + 0.5.*randn(size(theta));
 y_t = theta.*(sin(theta+delta_theta) ) + 0.5.*randn(size(theta));
 figure;plot(x_t(idx1),y_t(idx1),'r.');hold on; plot(x_t(idx2),y_t(idx2),'b.');
 
-z_t = x_t .* u1 + y_t .* u2;
+z_t = u1 * x_t +  u2 * y_t;
 
 data = single(shiftdim(z_t,-2));
 
