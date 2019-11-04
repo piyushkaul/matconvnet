@@ -2,7 +2,7 @@
 addpath('..\..\..\diffgeom');
 
 for final_fc = 1
-for layers_num = 5
+for layers_num = 10
     [net_bn, info_bn] = cnn_mnist('batchNormalization', false, 'layers_num', layers_num, 'final_fc', final_fc, 'imdbEval', 0);
 
     epoch_dir = getPath('batchNormalization', false, 'layers_num', layers_num, 'final_fc', final_fc, 'imdbEval', 0);   

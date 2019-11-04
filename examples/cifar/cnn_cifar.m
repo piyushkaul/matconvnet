@@ -19,6 +19,7 @@ opts.whitenData = true ;
 opts.contrastNormalization = true ;
 opts.networkType = 'simplenn' ;
 opts.train = struct() ;
+opts.numEpochs=127;
 opts = vl_argparse(opts, varargin) ;
 if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
 
@@ -58,7 +59,8 @@ end
   'expDir', opts.expDir, ...
   net.meta.trainOpts, ...
   opts.train, ...
-  'val', find(imdb.images.set == 2)) ;
+  'val', find(imdb.images.set == 2), ...
+  'numEpochs', opts.numEpochs) ;
 
 % -------------------------------------------------------------------------
 function fn = getBatch(opts)

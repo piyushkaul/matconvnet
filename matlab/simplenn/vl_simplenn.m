@@ -297,6 +297,8 @@ for i=1:n
   res(i).time = tic ;
   switch l.type
     case 'conv'
+      %fprintf('DATA = %f,\n', size(res(i).x))
+      %fprintf('WEIGHTS = %f,\n', size(l.weights{1}))
       res(i+1).x = vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
         'pad', l.pad, ...
         'stride', l.stride, ...
@@ -318,6 +320,11 @@ for i=1:n
         'method', l.method, ...
         l.opts{:}, ...
         cudnn{:}) ;
+    
+    case 'globalpool'
+      res(i+1).x = vl_nnglobalpool(res(i).x, ...
+        'method', l.method) ;
+             
 
     case {'normalize', 'lrn'}
       res(i+1).x = vl_nnnormalize(res(i).x, l.param) ;
@@ -432,6 +439,11 @@ if doder
                                 'method', l.method, ...
                                 l.opts{:}, ...
                                 cudnn{:}) ;
+                            
+
+      case 'globalpool'
+        res(i).dzdx = vl_nnglobalpool(res(i).x, res(i+1).dzdx,...
+                'method', l.method) ;                            
 
       case {'normalize', 'lrn'}
         res(i).dzdx = vl_nnnormalize(res(i).x, l.param, res(i+1).dzdx) ;

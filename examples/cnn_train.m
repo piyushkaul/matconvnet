@@ -34,6 +34,8 @@ opts.learningRate = 0.001 ;
 opts.weightDecay = 0.0005 ;
 opts.mnistVer = 1;
 opts.imdbEval = 0;
+opts.layers = 0;
+opts.finalSum = 0;
 
 opts.solver = [] ;  % Empty array means use the default SGD solver
 [opts, varargin] = vl_argparse(opts, varargin) ;
@@ -140,14 +142,19 @@ for lx=1:numel(net.layers)
         net.layers{lx}.type = 'softmax' ; %Piyush
     end 
 end 
-net.meta.trainOpts.numEpochs = 200;
-opts.numEpochs = 200;
+net.meta.trainOpts.numEpochs = opts.numEpochs;
+ 
 if opts.imdbEval == 1
     net.meta.trainOpts.batchSize = 1; %Piyush
-    net.meta.trainOpts.numEpochs = net.meta.trainOpts.numEpochs + 1;
-    opts.numEpochs = opts.numEpochs + 1;
+    %net.meta.trainOpts.numEpochs = net.meta.trainOpts.numEpochs + 1;
+    %opts.numEpochs = opts.numEpochs + 1;
     opts.batchSize = 1;
+    opts.numEpochs = 127;
+    net = modify_network(net, opts.layers);
+    net = vl_simplenn_tidy(net);
 end 
+
+
 net.meta.trainOpts.learningRate = [0.05*ones(1,200)] ;
 for epoch=start+1:opts.numEpochs
 
@@ -423,8 +430,12 @@ for t=1:params.batchSize:numel(subset)
   stats = extractStats(net, params, error / num) ;
   stats.num = num ;
   stats.time = time ;
-  if opts.imdbEval
-    feats = cat(4,feats,res(end).x);
+  if opts.imdbEval 
+      if opts.finalSum
+         feats = cat(1,feats,sum(res(end).x,3));
+      else
+         feats = cat(4,feats,res(end).x);
+      end
   end 
   currentSpeed = batchSize / batchTime ;
   averageSpeed = (t + batchSize - 1) / time ;

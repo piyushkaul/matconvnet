@@ -6,7 +6,7 @@ function [net, info] = cnn_cifar_riem2(varargin)
 run(fullfile(fileparts(mfilename('fullpath')), ...
   '..', '..', 'matlab', 'vl_setupnn.m')) ;
 
-opts.modelType = 'lenet_nl' ;
+opts.modelType = 'lenet' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 opts.expDir = fullfile(vl_rootnn, 'data', ...
@@ -23,11 +23,14 @@ end
 opts.special = 1;
 opts.first_label = 4;
 opts.second_label = 6;
+opts.finalSum = 1;
 
 opts.whitenData = false ;
 opts.contrastNormalization = false ;
 opts.networkType = 'simplenn' ;
 opts.train = struct() ;
+opts.network=[];
+opts.layers=0;
 
 opts = vl_argparse(opts, varargin) ;
 if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
@@ -64,7 +67,10 @@ else
   save(opts.imdbPath, '-struct', 'imdb') ;
 end
 
+
 net.meta.classes.name = imdb.meta.classes(:)' ;
+
+
 
 % -------------------------------------------------------------------------
 %                                                                     Train
@@ -85,7 +91,9 @@ end
   net.meta.trainOpts, ...
   opts.train, ...
   'val', find(imdb.images.set == 3),...
-  'imdbEval', opts.evalMode) ;
+  'imdbEval', opts.evalMode,...
+  'layers',opts.layers,...
+  'finalSum',opts.finalSum) ;
 
 % -------------------------------------------------------------------------
 function fn = getBatch(opts)
