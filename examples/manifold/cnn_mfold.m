@@ -19,6 +19,8 @@ opts.layers_num = 10;
 opts.final_fc = 1;
 opts.non_linearity = 'relu';
 opts.pool = 'max';
+opts.layers_clip=14;
+opts.finalSum=1;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 sfx = opts.networkType ;
@@ -87,7 +89,9 @@ end
   opts.train, ...
   'val', find(imdb.images.set == 3),...
   'mnistVer', opts.mnistVer,...
- 'imdbEval', opts.imdbEval) ;
+ 'imdbEval', opts.imdbEval,...
+  'layers_clip',opts.layers_clip,...
+  'finalSum',opts.finalSum);
 
 % --------------------------------------------------------------------
 function fn = getBatch(opts)

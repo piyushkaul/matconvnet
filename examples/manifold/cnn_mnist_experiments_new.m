@@ -3,7 +3,7 @@
 for final_fc = 1
 for layers_num = 8
 [net_bn, info_bn] = cnn_mfold(...
-   'batchNormalization', true, 'layers_num', layers_num, 'final_fc', final_fc, 'non_linearity', 'relu1', 'pool', 'avg', 'imdbEval', 0);
+   'batchNormalization', true, 'layers_num', layers_num, 'final_fc', final_fc, 'non_linearity', 'relu1', 'pool', 'avg', 'imdbEval', 1);
 end
 end 
 

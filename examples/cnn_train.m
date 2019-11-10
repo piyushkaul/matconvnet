@@ -34,7 +34,7 @@ opts.learningRate = 0.001 ;
 opts.weightDecay = 0.0005 ;
 opts.mnistVer = 1;
 opts.imdbEval = 0;
-opts.layers = 0;
+opts.layers_clip = 0;
 opts.finalSum = 0;
 
 opts.solver = [] ;  % Empty array means use the default SGD solver
@@ -149,8 +149,8 @@ if opts.imdbEval == 1
     %net.meta.trainOpts.numEpochs = net.meta.trainOpts.numEpochs + 1;
     %opts.numEpochs = opts.numEpochs + 1;
     opts.batchSize = 1;
-    opts.numEpochs = 127;
-    net = modify_network(net, opts.layers);
+    opts.numEpochs = 77;
+    net = modify_network(net, opts.layers_clip);
     net = vl_simplenn_tidy(net);
 end 
 
